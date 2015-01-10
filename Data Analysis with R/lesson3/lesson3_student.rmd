@@ -258,6 +258,8 @@ Response: By far the most users are in the 18-20 years range.
 ### The Spread of Memes
 Notes:
 
+* The finding that memes never truly disappear is very interesting.
+
 ***
 
 ### Lada's Money Bag Meme
@@ -268,13 +270,53 @@ Notes:
 ### Transforming Data
 Notes:
 
+```{r}
+qplot(x = friend_count, data = pf)
+
+summary(pf$friend_count)
+
+summary(log10(pf$friend_count + 1))
+
+summary(sqrt(pf$friend_count + 1))
+
+#install.packages('gridExtra')
+library(gridExtra)
+
+p1 <- ggplot(aes(x = friend_count), data = pf) +
+    xlab("Friend count") +
+    ylab("Number of users in sample") +
+    geom_histogram(binwidth = 100, color = 'black', fill = '#5760AB')
+p2 <- ggplot(aes(x = friend_count), data = pf) +
+    xlab("Friend count") +
+    ylab("Number of users in sample") +
+    scale_x_log10() +
+    geom_histogram(binwidth = 0.2, color = 'black', fill = '#5760AB')
+p3 <- ggplot(aes(x = friend_count), data = pf) +
+    xlab("Friend count") +
+    ylab("Number of users in sample") +
+    scale_x_sqrt() +
+    geom_histogram(binwidth = 2, color = 'black', fill = '#5760AB')
+
+grid.arrange(p1, p2, p3)
+
+```
+
 ***
 
 ### Add a Scaling Layer
 Notes:
 
-```{r Add a Scaling Layer}
+* scales can be added to existing plots(DRY)
+* be careful with the axis names when adding scales
 
+```{r Add a Scaling Layer}
+countScale <- ggplot(aes(x = friend_count), data = pf) +
+    geom_histogram() +
+    scale_x_log10()
+
+logScale <- qplot(x = log10(friend_count), data = pf)
+
+grid.arrange(countScale, logScale, ncol = 2)
 ```
 
 ***
@@ -284,6 +326,27 @@ Notes:
 
 ```{r Frequency Polygons}
 
+qplot(x = friend_count,
+      data = subset(pf, !is.na(gender)),
+      binwidth = 10) +
+    scale_x_continuous(limits = c(0, 1000),
+                       breaks = seq(0, 1000, 50)) +
+    facet_wrap(~ gender)
+
+qplot(x = friend_count, y = ..count../sum(..count..),
+      data = subset(pf, !is.na(gender)),
+      xlab = "Friend Count",
+      ylab = "Proportion of Users with that friend count",
+      geom = "freqpoly", binwidth = 10, color = gender) +
+    scale_x_continuous(limits = c(0, 1000),
+                       breaks = seq(0, 1000, 50))
+
+ggplot(aes(x = friend_count, y = ..count../sum(..count..)), data = subset(pf, !is.na(gender))) +
+  geom_freqpoly(aes(color = gender)) +
+  scale_x_continuous(limits = c(0, 1000), breaks = seq(0, 1000, 50)) +
+  xlab('Friend Count') +
+  ylab('Percentage of users with that friend count')
+
 ```
 
 ***
@@ -291,7 +354,27 @@ Notes:
 ### Likes on the Web
 Notes:
 
+* the ticks on the log scale are from the normal plot
+
 ```{r Likes on the Web}
+
+ggplot(aes(x = www_likes), data = subset(pf, !is.na(gender))) +
+  geom_freqpoly(aes(color = gender)) +
+  scale_x_log10() +
+  xlab('Likes Count') +
+  ylab('Count of users with that like count')
+
+ggplot(aes(x = log10(www_likes)), data = subset(pf, !is.na(gender))) +
+  geom_freqpoly(aes(color = gender)) +
+  scale_x_continuous()+
+  xlab('Likes Count') +
+  ylab('Count of users with that like count')
+
+ggplot(aes(x = www_likes, y = ..count../sum(..count..)), data = subset(pf, !is.na(gender))) +
+  geom_freqpoly(aes(color = gender), binwidth = 1000) +
+  scale_x_continuous() +
+  xlab('Likes Count') +
+  ylab('Percentage of users with that like count')
 
 ```
 
@@ -302,6 +385,8 @@ Notes:
 Notes:
 
 ```{r Box Plots}
+by(pf$www_likes, pf$gender, sum)
+
 
 ```
 
