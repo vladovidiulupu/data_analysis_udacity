@@ -12,8 +12,9 @@ def compute_r_squared(data, predictions):
     # that you might find useful, but you don't have to use them.
 
     # YOUR CODE GOES HERE
-
-    return r_squared
+    SSE = np.sum((data - predictions) ** 2)
+    SST = np.sum((data - np.mean(data)) ** 2)
+    return 1 - SSE / SST
 
 
 if __name__ == "__main__":
