@@ -32,7 +32,21 @@ def fix_turnstile_data(filenames):
     https://www.dropbox.com/s/074xbgio4c39b7h/solution_turnstile_110528.txt
     '''
     for name in filenames:
-        # your code here
+        new_name = 'updated_' + name
+        new_file = open(new_name, 'w')
+        
+        nr_columns = 5
+        with open(name) as f:
+            for line in f:
+                values = line.strip().split(',')
+                line_start = values[0:3]
+                for data_start in range(3, len(values), nr_columns):
+                    data_end = data_start + nr_columns
+                    new_line = ','.join(line_start + values[data_start:data_end]) + '\n'
+                    new_file.write(new_line)
+            new_file.close()
+                
+        
 
 if __name__ == "__main__":
     input_files = ['turnstile_110528.txt', 'turnstile_110604.txt']

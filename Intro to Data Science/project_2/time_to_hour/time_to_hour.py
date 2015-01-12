@@ -1,4 +1,5 @@
-import pandas
+import pandas as pd
+import re
 
 def time_to_hour(time):
     '''
@@ -14,8 +15,8 @@ def time_to_hour(time):
     Please return hour as an integer.
     '''
     
-    hour = # your code here
-    return hour
+    hour = re.search('(\d\d):\d\d:\d\d', time).group(1)
+    return int(hour)
 
 if __name__ == "__main__":
     input_filename = "turnstile_data_master_subset_consolidate_rows.csv"
