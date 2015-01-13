@@ -24,11 +24,14 @@ def word_count():
 
 
     word_counts = {}
-
+    identity = string.maketrans("", "")
+    
     for line in sys.stdin:
         data = line.strip().split(" ")
         
-        # Your code here
+        for token in data:
+            word = token.translate(identity, string.punctuation).lower()
+            word_counts[word] = word_counts.get(word, 0) + 1
 
     print word_counts
 
