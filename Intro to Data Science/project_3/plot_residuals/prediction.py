@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy
+import scipy.stats
 
 
 def plot_residuals(dataframe, predictions):
@@ -15,10 +17,10 @@ def plot_residuals(dataframe, predictions):
     http://www.itl.nist.gov/div898/handbook/pri/section2/pri24.htm
     '''
 
+    residuals = dataframe['ENTRIESn_hourly'] - predictions
     plt.figure()
-    #
-    # your code here
-    #
+    residuals.hist()
+    print 'Residuals normality: ', scipy.stats.shapiro(residuals)
     return plt
 
 def normalize_features(array):
@@ -56,11 +58,11 @@ def gradient_descent(features, values, theta, alpha, num_iterations):
         cost = compute_cost(features, values, theta)
         cost_history.append(cost)
 
-    return theta, pandas.Series(cost_history)
+    return theta, pd.Series(cost_history)
 
 def predictions(dataframe):
 
-    dummy_units = pandas.get_dummies(dataframe['UNIT'], prefix='unit')
+    dummy_units = pd.get_dummies(dataframe['UNIT'], prefix='unit')
     features = dataframe[['rain', 'precipi', 'Hour', 'meantempi']].join(dummy_units)
     values = dataframe[['ENTRIESn_hourly']]
     m = len(values)
@@ -89,5 +91,5 @@ if __name__ == "__main__":
     prediction_values = predictions(turnstile_master)
 
     image = "plot.png"
-    plt = plot_residuals(turnstile_master, prediction_values)
-    plt.savefig(image)
+    plot = plot_residuals(turnstile_master, prediction_values)
+    plot.savefig(image)

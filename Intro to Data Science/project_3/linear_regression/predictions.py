@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from ggplot import *
 
 def normalize_features(array):
    """
@@ -13,33 +14,37 @@ def normalize_features(array):
 
 def compute_cost(features, values, theta):
     """
-    Compute the cost function given a set of features / values, and the values for our thetas.
+    Compute the cost function given a set of features / values, 
+    and the values for our thetas.
     
-    This should be the same code as the compute_cost function in the lesson #3 exercises. But
-    feel free to implement your own.
+    This can be the same code as the compute_cost function in the lesson #3 exercises,
+    but feel free to implement your own.
     """
-    
-    #
-    # your code here
-    #
-
+    m = len(values)
+    sum_of_square_errors = np.square(np.dot(features, theta) - values).sum()
+    cost = sum_of_square_errors / (2*m)
     return cost
 
 def gradient_descent(features, values, theta, alpha, num_iterations):
     """
     Perform gradient descent given a data set with an arbitrary number of features.
     
-    This is the same gradient descent code as in the lesson #3 exercises. But feel free
-    to implement your own.
+    This can be the same gradient descent code as in the lesson #3 exercises,
+    but feel free to implement your own.
     """
+    
     m = len(values)
     cost_history = []
-
-    for i in range(num_iterations):
-        # 
-        # your code here
-        #
-    return theta, pd.Series(cost_history)
+    new_theta = theta
+    
+    for iter in range(num_iterations):   
+        residuals = np.dot(features, theta) - values
+        gradient = (residuals.dot(features))
+        new_theta -= alpha / m * gradient    
+        new_cost = compute_cost(features, values, new_theta)
+        cost_history.append(new_cost)
+        
+    return new_theta, pd.Series(cost_history)
 
 def predictions(dataframe):
     '''
@@ -65,7 +70,8 @@ def predictions(dataframe):
     '''
 
     dummy_units = pd.get_dummies(dataframe['UNIT'], prefix='unit')
-    features = dataframe[['rain', 'precipi', 'Hour', 'meantempi']].join(dummy_units)
+    features = dataframe[['rain', 'precipi', 'Hour', 'meantempi', 'maxpressurei', \
+        'meanwindspdi']].join(dummy_units)
     values = dataframe[['ENTRIESn_hourly']]
     m = len(values)
 
@@ -84,6 +90,8 @@ def predictions(dataframe):
     theta_gradient_descent, cost_history = gradient_descent(features_array, values_array, theta_gradient_descent,
                                                             alpha, num_iterations)
     predictions = np.dot(features_array, theta_gradient_descent)
+    
+    print plot_cost_history(alpha, cost_history)
 
     return predictions
 
@@ -93,6 +101,24 @@ def compute_r_squared(data, predictions):
     r_squared = SSReg / SST
 
     return r_squared
+    
+def plot_cost_history(alpha, cost_history):
+   """This function is for viewing the plot of your cost history.
+   You can run it by uncommenting this
+
+       plot_cost_history(alpha, cost_history) 
+
+   call in predictions.
+   
+   If you want to run this locally, you should print the return value
+   from this function.
+   """
+   cost_df = pd.DataFrame({
+      'Cost_History': cost_history,
+      'Iteration': range(len(cost_history))
+   })
+   return ggplot(cost_df, aes('Iteration', 'Cost_History')) + \
+      geom_point() + ggtitle('Cost History for alpha = %.3f' % alpha )
 
 
 if __name__ == "__main__":

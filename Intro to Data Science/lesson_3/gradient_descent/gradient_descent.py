@@ -42,7 +42,7 @@ def gradient_descent(features, values, theta, alpha, num_iterations):
         new_cost = compute_cost(features, values, theta)
         cost_history.append(new_cost)
         
-    return theta, cost_history
+    return theta, pandas.Series(cost_history)
 
 if __name__ == '__main__':
 

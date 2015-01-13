@@ -12,8 +12,9 @@ def compute_r_squared(data, predictions):
     # Numpy has a couple of functions -- np.mean() and np.sum() --
     # that you might find useful, but you don't have to use them.
 
-    # YOUR CODE GOES HERE
-
+    SSE = np.sum((data - predictions) ** 2)
+    SST = np.sum((data - np.mean(data)) ** 2) 
+    r_squared = 1 - SSE / SST
     return r_squared
 
 
