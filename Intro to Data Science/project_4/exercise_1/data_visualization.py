@@ -1,5 +1,6 @@
-from pandas import *
+import pandas as pd
 from ggplot import *
+from datetime import datetime
 
 def plot_weather_data(turnstile_weather):
     '''
@@ -27,16 +28,27 @@ def plot_weather_data(turnstile_weather):
      
     However, due to the limitation of our Amazon EC2 server, we are giving you about 1/3
     of the actual data in the turnstile_weather dataframe
-    '''
-
-    plot = # your code here
+    '''  
+    daily_riders = turnstile_weather.groupby('weekday').sum()\
+        ['ENTRIESn_hourly'].reset_index()
+    plot = ggplot(daily_riders, aes(x='weekday', y = 'ENTRIESn_hourly')) + \
+        xlab('Day of week') + ylab('Subway Riders') + \
+        ggtitle('Subway Rider Totals by Day of Week') + \
+        geom_bar(stat = "bar", fill = 'blue')
+    
     return plot
 
 
 if __name__ == "__main__":
     image = "plot.png"
     with open(image, "wb") as f:
+        input_filename = "turnstile_data_master_with_weather.csv"
         turnstile_weather = pd.read_csv(input_filename)
         turnstile_weather['datetime'] = turnstile_weather['DATEn'] + ' ' + turnstile_weather['TIMEn']
+        turnstile_weather['weekday'] = turnstile_weather['DATEn'].map(
+            lambda x: datetime.strptime(x, '%Y-%m-%d').strftime('%A'))
+        turnstile_weather_small = turnstile_weather.ix[np.random.choice(
+            turnstile_weather.index.values, 500)]
+            
         gg =  plot_weather_data(turnstile_weather)
         ggsave(f, gg)
