@@ -22,6 +22,17 @@ def open_zip(datafile):
 def parse_file(datafile):
     workbook = xlrd.open_workbook(datafile)
     sheet = workbook.sheet_by_index(0)
+    
+    coast = sheet.col_values(1)[1:]
+    maxvalue = max(coast)
+    minvalue = min(coast)
+    avgcoast = sum(coast) / len(coast)
+    
+    maxtime_excel = [sheet.cell_value(r, 0) for r in range(sheet.nrows) if sheet.cell_value(r, 1) == maxvalue]
+    maxtime = xlrd.xldate_as_tuple(maxtime_excel[0], 0)
+    
+    mintime_excel = [sheet.cell_value(r, 0) for r in range(sheet.nrows) if sheet.cell_value(r, 1) == minvalue]
+    mintime = xlrd.xldate_as_tuple(mintime_excel[0], 0)
 
     ### example on how you can get the data
     #sheet_data = [[sheet.cell_value(r, col) for col in range(sheet.ncols)] for r in range(sheet.nrows)]
@@ -48,11 +59,11 @@ def parse_file(datafile):
     
     
     data = {
-            'maxtime': (0, 0, 0, 0, 0, 0),
-            'maxvalue': 0,
-            'mintime': (0, 0, 0, 0, 0, 0),
-            'minvalue': 0,
-            'avgcoast': 0
+            'maxtime': maxtime,
+            'maxvalue': maxvalue,
+            'mintime': mintime,
+            'minvalue': minvalue,
+            'avgcoast': avgcoast
     }
     return data
 

@@ -38,10 +38,34 @@ def pretty_print(data, indent=4):
 
 
 def main():
-    results = query_by_name(ARTIST_URL, query_type["simple"], "Nirvana")
+    # How many bands are named "First Aid Kit"?
+    results = query_by_name(ARTIST_URL, query_type["simple"], "First Aid Kit")
+    print len([r for r in results["artists"] if r["name"] == "First Aid Kit"])
+    
+    # Begin_area name for Queen?
+    results = query_by_name(ARTIST_URL, query_type["simple"], "Queen")
+    print results["artists"][0]["begin-area"]["name"]
+    
+    # Spanish alias for Beatles?
+    results = query_by_name(ARTIST_URL, query_type["simple"], "Beatles")
+    aliases = results["artists"][0]["aliases"]
+    print [alias["name"] for alias in aliases if alias["locale"] == "es"][0]
+    
+    # Nirvana disambiguation?
+    results = query_by_name(ARTIST_URL, query_type["simple"], "Nirvana")  
+    pretty_print(results["artists"][0]["disambiguation"])
+    
+    # When was One Direction formed?
+    results = query_by_name(ARTIST_URL, query_type["simple"], "One Direction")  
+    print results["artists"][0]["life-span"]["begin"]    
+    
+    # Example code
+    results = query_by_name(ARTIST_URL, query_type["simple"], "Nirvana")    
+    
     pretty_print(results)
-
-    artist_id = results["artists"][1]["id"]
+    pretty_print(results["artists"][0])
+    
+    artist_id = results["artists"][1]["id"]        
     print "\nARTIST:"
     pretty_print(results["artists"][1])
 
