@@ -22,11 +22,14 @@ import json
 import codecs
 import requests
 
+import pprint
+p = pprint.PrettyPrinter(indent = 2, depth = None)
+p.pprint(data[10])
+
 URL_MAIN = "http://api.nytimes.com/svc/"
 URL_POPULAR = URL_MAIN + "mostpopular/v2/"
 API_KEY = { "popular": "",
             "article": ""}
-
 
 def get_from_file(kind, period):
     filename = "popular-{0}-{1}.json".format(kind, period)
@@ -36,9 +39,18 @@ def get_from_file(kind, period):
 
 def article_overview(kind, period):
     data = get_from_file(kind, period)
-    titles = []
-    urls =[]
-    # YOUR CODE HERE
+    
+    titles = [{article["section"]: article["title"]} for article in data]
+    
+    urls = []        
+    for article in data:
+        if type(article["media"]) == list:
+            media_list = article["media"]            
+            for media in media_list:
+                metadata_list = media["media-metadata"]
+                for metadata in metadata_list:
+                    if metadata["format"] == u'Standard Thumbnail':
+                        urls.append(metadata["url"])
 
     return (titles, urls)
 
