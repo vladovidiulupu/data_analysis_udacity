@@ -19,13 +19,11 @@ def get_authors(root):
     authors = []
     for author in root.findall('./fm/bibl/aug/au'):
         data = {
-                "fnm": None,
-                "snm": None,
-                "email": None,
-                "insr": []
+                "fnm": author.find("fnm").text,
+                "snm": author.find("snm").text,
+                "email": author.find("email").text,
+                "insr": [node.attrib['iid'] for node in author.findall('insr')]
         }
-
-        # YOUR CODE HERE
 
         authors.append(data)
 
