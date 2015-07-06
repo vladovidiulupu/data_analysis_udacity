@@ -1734,7 +1734,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>I used the Mann-Whitney u-test to analyze the NYC subway data. I used a one-tail P value because I was testing if there are more subway entries when it rains. The null hypothesis is that there is no difference between the entries on rainy or non-rainy days. I will start with 0.05 as my threshold.</p>
+<p>I used the Mann-Whitney U-test to analyze the NYC subway data. The question was if there is any difference in subway ridership between rainy and non-rainy days. I used a two-tail P value because I was testing if there was a difference in any direction. The null hypothesis is that the hourly entries on rainy and on non-rainy days come from the same probability distribution. I will start with 0.05 as my threshold, which corresponds to the 95% confidence level.</p>
 </div>
 </div>
 </div>
@@ -1753,7 +1753,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The u-test is applicable to this dataset because the distributions are not normal, but seem to be exponential. The should give more accurate results than the t-test because it makes no assumptions about the distributions of the two groups.</p>
+<p>The U-test is applicable to this dataset because the distributions are not normal, but seem to be exponential. The U-test should give more accurate results than the t-test because it makes no assumptions about the distributions of the two groups.</p>
 </div>
 </div>
 </div>
@@ -1773,9 +1773,14 @@ div#notebook {
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>U-statistic: 1924409167.0</p>
-<p>p-value: 0.025</p>
+<p>p-value: 0.05</p>
 <p>Mean of entries on rainy days: 1105.45</p>
 <p>Mean of entries on days without rain: 1090.28</p>
+<p>Because the data is long-tailed, some robust statistics for the two samples would also be useful:</p>
+<p>Rainy days median: 282</p>
+<p>Rainy days IQR: (41, 1103)</p>
+<p>Non-rainy days median: 278</p>
+<p>Non-rainy days IQR: (38, 1111)</p>
 </div>
 </div>
 </div>
@@ -1794,7 +1799,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The results seem to be statistically significant and the interpretation is that if we assume that there is no difference in ridership on rainy days compared to days with no rain, it would be very improbable to get identical or more extreme results if we collected another dataset.</p>
+<p>The results seem to be statistically significant and the interpretation of the p-value is that if we assume that the null hypothesis is true, it would be very improbable to get identical or more extreme results if we repeated this procedure. Because the p-value is just under the threshold defined before applying the test, we should reject the null hypothesis.</p>
 </div>
 </div>
 </div>
@@ -1823,7 +1828,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>I used OLS from statsmodels to compute the coefficients for my regression model.</p>
+<p>I used OLS from statsmodels to compute the coefficients for my regression model. I chose this method because it is the standard when dealing with data that fit in memory with relatively few (less than 1000) features.</p>
 </div>
 </div>
 </div>
@@ -1861,7 +1866,7 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>I selected the weather variables based on the intuition that they might be relevant to what we are trying to predict. Initially I didn&#39;t think that the collection unit would be relevant, but it seems to explain around 30% of the variance in the data, so I kept it in. I added the hour because I thought that the subway traffic would depend on it then converted it to a dummy, because it didn&#39;t make sense to use it as a continuous variable. </p>
+<p>I selected the weather variables based on the intuition that they might be relevant to what we are trying to predict. Initially I didn&#39;t think that the collection unit would be relevant, but it seems to explain around 30% of the variance in the data, so I kept it in. I added the hour because I thought that the subway traffic would depend on it then converted it to a dummy, because it didn&#39;t make sense to use it as a continuous variable. I chose to add the hour and not the weekday to avoid overfitting, because there are few weekdays in the 30 day dataset (~4 of each).</p>
 </div>
 </div>
 </div>
@@ -1920,7 +1925,14 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>It seems to be better than having no model at all, though looking at the very small difference between ridership on rainy days, a domain expert is more qualified to say if such a model is appropriate. My main concern is that most of the variance is explained by the unit dummies, which could be a case of overfitting the model to this specific dataset.</p>
+<p>The R<sup>2</sup> value is the ratio between the variability explained by the model and the variability in the quantity we are trying to predict. It takes values between 0 and 1 and larger values are better. R<sup>2</sup> is a way to quantify if this solution is better than having no model and predicting the mean every time. In this case, using the linear regression model seems to be better than having no model at all, though looking at the very small difference between ridership on rainy days, a domain expert is more qualified to say if such a model is useful. My main concern is that most of the variance is explained by the unit dummies, which could be a case of overfitting the model to this specific dataset. Also, some diagnostic plots for linear regression could help us see if the linear model is appropriate for the data.</p>
+<p>The distribution of the residuals looks normal with two long tails, one to the left and a longer right tail:</p>
+<p><img alt="Two histograms for rainy and non-rainy days" src="img/residuals_histogram.png" width="640", height="480") /></p>
+<p>Let&#39;s see what happens if we zoom in on the right tail:</p>
+<p><img alt="Two histograms for rainy and non-rainy days" src="img/residuals_histogram_tail.png" width="640", height="480") /></p>
+<p>There seem to be quite a few large errors, but rain doesn&#39;t seem to be related to them. There seems to be a more fundamental problem with the regression model. If we saw the residuals over time, we might get a few more insights. Unfortunately for around 150000 points a scatterplot makes a poor visualization, so a LOESS curve would be a better visualization:</p>
+<p><img alt="Two histograms for rainy and non-rainy days" src="img/residuals_over_time.png" width="640", height="480") /></p>
+<p>There seems to be a seasonal pattern in the residuals, which the linear model in unequipped to deal with. One of the assumptions of the linear model is that the data points are independent, which is not the case here. The residuals ordered by any variable should exhibit the property of <a href="https://en.wikipedia.org/wiki/Homoscedasticity">Homoscedasticity</a>, which is clearly not the case here.</p>
 </div>
 </div>
 </div>
@@ -1958,6 +1970,15 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>In this plot we can see the distribution of the hourly entries, which is the reason why I chose do do the nonparametric Mann-Whitney U-test instead of the t-test, which assumes that the data comes from a normal distribution. We also have two times more data for non-rainy days than for rainy ones. Class imbalances like this one might affect prediction algorithms, which will focus on obtaining better predictions on the majoritary class at the expense of the others.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h5 id="3.2-One-visualization-can-be-more-freeform.-You-should-feel-free-to-implement-something-that-we-discussed-in-class.">3.2 One visualization can be more freeform. You should feel free to implement something that we discussed in class.<a class="anchor-link" href="#3.2-One-visualization-can-be-more-freeform.-You-should-feel-free-to-implement-something-that-we-discussed-in-class.">&#182;</a></h5>
 </div>
 </div>
@@ -1968,7 +1989,16 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p><img alt="Scatterplot for entries by hour" src="img/entries_by_hour.png" width="640", height="480") /></p>
+<p><img alt="Scatterplot for entries by hour" src="img/entries_by_hour_bar.png" width="640", height="480") /></p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In the distribution of entries by hour, there seems to be a hourly pattern, which reinforces the idea of including the hour as a feature in the regression model. Rain doesn&#39;t seem to have much effect here either.</p>
 </div>
 </div>
 </div>
@@ -1997,8 +2027,8 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The question was if people use the subway more if it is raining and after performing a statistical test, judging by the p-value could lead us to say that there is a statistically significant difference in subway ridership depending on weather. The short answer would be: yes, I am confident that more people are taking the subway when it is raining.</p>
-<p>However, a problem with statistical significance tests is that they don&#39;t take effect sizes into account. The p-value returned by the test is small because there are a lot of observations in the dataset, but is a relative difference of 1.3% significant to the person who will use these results to make a decision? It seems statistical significance and practical significance can be unrelated sometimes. </p>
+<p>The question was if weather, especially rain influences the number of people using the subway in New York City. After applying a statistical test with and rejecting the null hypothesis with a confidence of 95%, this could lead us to say that there is a statistically significant difference in subway ridership depending on weather. The short answer would be: yes, I am confident that more people are taking the subway when it is raining.</p>
+<p>However, a problem with statistical significance tests is that they don&#39;t take effect sizes into account. The p-value returned by the test is small because there are a lot of observations in the dataset, but is a relative difference of 1.3% significant to the person who will use these results to make a decision? It seems statistical significance and practical significance can be unrelated sometimes.</p>
 </div>
 </div>
 </div>
@@ -2017,7 +2047,8 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>I used the Mann-Whitney U-test to check the alternative hypothesis that more people are riding the subway on rainy days than on days with no rain and the results were significant, with a p-value of 0.025. In the linear regression model, when trying to predict subway ridership, most of the variance was explained by the turnstile collecting units and the hour. Had I used a model with only the weather variables, the model&#39;s R<sup>2</sup> would have been around 0.10. Also, taking a closer look at the regression model, the coefficients for the weather variables are an order of magnitude smaller than some of the coefficients from the unit and hour dummies.</p>
+<p>I used the Mann-Whitney U-test to check the alternative hypothesis that there is a difference in the distribution of hourly subway entries depending on rain and I obtained a p-value of 0.05, which means that they could be significant, but this is not the final conclusion.</p>
+<p>In the linear regression model, when trying to predict subway ridership, most of the variance was explained by the turnstile collecting units and the hour. Had I used a model with only the weather variables, the model&#39;s R<sup>2</sup> would have been around 0.1. Also, taking a closer look at the regression model, the coefficients for the weather variables are an order of magnitude smaller than some of the coefficients from the unit and hour dummies. Moreover, the rain coefficient&#39;s value is 25.9 while its standard error is 38.5, which doesn&#39;t look like it is influencing much. Of course, the model might have multicollinearity issues, but even when adding the rain, fog and precipi coefficients, they don&#39;t approach the values of coefficients for hours or units.</p>
 </div>
 </div>
 </div>
@@ -2046,11 +2077,61 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<ul>
-<li>In the statistical test, I only looked at two variables: rain and the number of subway entries. There might be some other variable correlated with rain that could explain the difference in ridership</li>
-<li>I didn&#39;t address outliers or missing data in any way</li>
-<li>Building the regression model, including the units did lead to a much larger R<sup>2</sup> value than I could have obtained otherwise, but using 465 dummy variables for only 30 days of data might be a case of overfitting</li>
-</ul>
+<p>The first shortcoming comes from the available data, we only have data for one month(May 2011) and this is insufficient to make reliable analyses that can be applicable to any period. If this May was particularly sunny, rainy, hot or cold, the results presented here are not generalizable even to May in another year, not even considering other months.</p>
+<p>In the statistical test, I only looked at two variables: rain and the number of subway entries. There might be some other variable correlated with rain that could explain the difference in ridership. This is a table of the number of hourly entries on weekdays:</p>
+<table>
+<thead>
+<tr>
+<th>Weekday</th>
+<th>no rain</th>
+<th>rain</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sun</td>
+<td>17466</td>
+<td>4333</td>
+</tr>
+<tr>
+<td>Mon</td>
+<td>8920</td>
+<td>13322</td>
+</tr>
+<tr>
+<td>Tues</td>
+<td>13183</td>
+<td>4412</td>
+</tr>
+<tr>
+<td>Wed</td>
+<td>8816</td>
+<td>8822</td>
+</tr>
+<tr>
+<td>Thurs</td>
+<td>13492</td>
+<td>4503</td>
+</tr>
+<tr>
+<td>Fri</td>
+<td>12978</td>
+<td>4364</td>
+</tr>
+<tr>
+<td>Sat</td>
+<td>12992</td>
+<td>4348</td>
+</tr>
+</tbody>
+</table>
+<p>There are 5 Sundays in our dataset. One was May the 1st, a holiday. On some other Sundays there may be special events like concerts. If these things influence rideship, the counts will be added to the rain or no rain groups and influence the results of the comparison. Compounded with the fact that for the currently chosen significance level, the results are at the limit, it is easy to see how things like this can affect the results of the statistical test.</p>
+<p>Also, not having enough data about what people are actually doing is also limiting the range of questions we can ask. For example, what proportion of the people who are leaving their house are using the subway on rainy and non-rainy days? This question cannot be investigated using the current dataset.</p>
+<p>The linear regression method assumes that the errors are iid(independent and identically distributed) gaussians centered at 0. The residual plots showed that the residuals have a long tailed distribution. The residuals over time plot showed that there is a seasonal pattern unaccounted for by our data. </p>
+<p>This QQ plot of the residuals further illustrates the fact that the residuals we have are not normally distributed:</p>
+<p><img alt="Residual QQ plot" src="img/residualQQ.png" width="640", height="480") /></p>
+<p>I didn&#39;t address outliers or missing data in any way, which may be an issue given the skewed distribution of the residuals.</p>
+<p>When building the regression model, including the units did lead to a much larger R<sup>2</sup> value than I could have obtained otherwise, but by using 465 dummy variables I might have overfit the training data.</p>
 </div>
 </div>
 </div>
@@ -2069,7 +2150,8 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>It is strange that the number of entries at 00:00 is much higher than at 23:00.</p>
+<p>There seem to be disproportionately more subway entries on Monday when it rains. Either Mondays had some pretty bad weather in our dataset or there is something else going on:</p>
+<p><img alt="Scatterplot for entries by hour" src="img/entries_by_weekday.png" width="640", height="480") /></p>
 </div>
 </div>
 </div>
